@@ -25,6 +25,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +40,8 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.chibde.visualizer.CircleBarVisualizerSmooth;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements ConnectionReceiver.ReceiverListener {
     public NotificationUtils mNotificationUtils;
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
         mNotificationUtils = new NotificationUtils(this);
 
-        imageView = findViewById(R.id.visualizer);
+
 
 
 
@@ -137,13 +141,41 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         stopBackgroundAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                audioServiceBinder.stopAudio();
+                audioServiceBinder.stopAudio(imageView);
 //                backgroundAudioProgress.setVisibility(ProgressBar.INVISIBLE);
                 state="start";
                 Toast.makeText(getApplicationContext(), "Stop play web audio file.", Toast.LENGTH_LONG).show();
             }
         });
-    }
+
+
+        TelephonyManager telephonyManager =
+                (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+
+        PhoneStateListener callStateListener = new PhoneStateListener() {
+            public void onCallStateChanged(int state, String incomingNumber)
+            {
+                if(state==TelephonyManager.CALL_STATE_RINGING){
+
+                }
+                if(state==TelephonyManager.CALL_STATE_OFFHOOK){
+
+                }
+
+                if(state==TelephonyManager.CALL_STATE_IDLE){
+
+                }
+            }
+        };
+
+
+
+        telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
+
+
+
+
+}
     // Bind background service with caller activity. Then this activity can use
     // background service's AudioServiceBinder instance to invoke related methods.
     private void bindAudioService()
@@ -184,7 +216,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                             // Calculate the percentage.
                             int currProgress =audioServiceBinder.getAudioProgress();
                             // Update progressbar. Make the value 10 times to show more clear UI change.
-                            backgroundAudioProgress.setProgress(currProgress*10);
+               Log.d("percentage",String.valueOf(currProgress));
+//
+//                            backgroundAudioProgress.setProgress(currProgress*10);
                         }
                     }
                 }
@@ -321,8 +355,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
 
-        String title = "Radioboss";
-        String author = "Streaming..............";
+        String title = "רדיו אזורי";
+        String author = "שידור חי";
 
 
 
@@ -421,46 +455,87 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
 
+
         startBackgroundAudio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
+
                 checkConnection();
+                startBackgroundAudio.setClickable(false);
 
 
 
 
 
-                if(state.equalsIgnoreCase("start")||state.equalsIgnoreCase("paused")) {
+
+
+
+
+
+
+                if(state.equalsIgnoreCase("start")||state.equalsIgnoreCase("stop")) {
 
 
                     // Set web audio file url
+
+
                     audioServiceBinder.setAudioFileUrl(audioFileUrl);
+
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    startBackgroundAudio.setClickable(true);
+
+
+                                }
+                            },
+                            3500
+                    );
                     // Web audio is a stream audio.
-                    audioServiceBinder.setStreamAudio(true);
+
                     // Set application context.
                     audioServiceBinder.setContext(getApplicationContext());
                     // Initialize audio progress bar updater Handler object.
 
+                    createAudioProgressbarUpdater();
+
+                    imageView = findViewById(R.id.visualizer);
 
 
                     // Start audio in background service.
                     audioServiceBinder.startAudio(imageView,backgroundAudioProgress);
 
-                    state="playing";
 
+                    state="playing";
+                    gone();
+                    mutecalls();
                     notigications();
                     animator();
 
-                    Glide.with(getApplicationContext()).load(R.drawable.pause_foreground).into(startBackgroundAudio);
+
+
+                    Glide.with(getApplicationContext()).load(R.drawable.stop_foreground).into(startBackgroundAudio);
+
 
 
 
                 }
                 else if(state.equalsIgnoreCase("playing")){
-                    audioServiceBinder.pauseAudio();
-                    state="paused";
+                    startBackgroundAudio.setClickable(true);
+                    audioServiceBinder.stopAudio(imageView);
+                    imageView=null;
+
+                    Intent stopServiceIntent = new Intent(MainActivity.this, AudioService.class);
+                    stopService(stopServiceIntent);
+
+                    state="stop";
 //                    imageView.setVisibility(View.GONE);
-                    backgroundAudioProgress.setVisibility(ProgressBar.GONE);
+
+
+
                     Glide.with(getApplicationContext()).load(R.drawable.play_foreground).into(startBackgroundAudio);
 
 
@@ -478,10 +553,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
         if (pressedTime + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
+
+            Intent stopServiceIntent = new Intent(MainActivity.this, AudioService.class);
+            stopService(stopServiceIntent);
             finish();
         } else {
             Glide.with(getApplicationContext()).load(R.drawable.play_foreground).into(startBackgroundAudio);
-            audioServiceBinder.stopAudio();
+            audioServiceBinder.stopAudio(imageView);
             mNotificationUtils = new NotificationUtils(this);
             mNotificationUtils.cancelNotification();
             state="start";
@@ -490,6 +568,51 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         pressedTime = System.currentTimeMillis();
 
 
+    }
+
+
+    public void mutecalls(){
+
+
+        TelephonyManager telephonyManager =
+                (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+
+        PhoneStateListener callStateListener = new PhoneStateListener() {
+            public void onCallStateChanged(int state, String incomingNumber)
+            {
+                if(state==TelephonyManager.CALL_STATE_RINGING){
+
+
+                    audioServiceBinder.stopAudio(imageView);
+                }
+                if(state==TelephonyManager.CALL_STATE_OFFHOOK){
+
+                    audioServiceBinder.stopAudio(imageView);
+                }
+
+
+                if(state==TelephonyManager.CALL_STATE_IDLE){
+
+                }
+            }
+        };
+        telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
+
+    }
+
+
+
+
+
+
+
+    private void gone() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                backgroundAudioProgress.setVisibility(View.GONE);
+            }
+        });
     }
 
 

@@ -86,8 +86,10 @@ public class AudioServiceBinder extends Binder {
 
 
         initAudioPlayer(imageView,prg);
+        audioPlayer.setVolume(1,1);
         if (audioPlayer != null) {
             audioPlayer.start();
+
         }
     }
 
@@ -99,10 +101,11 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Stop play audio.
-    public void stopAudio() {
+    public void stopAudio(CircleBarVisualizerSmooth imageView) {
         if (audioPlayer != null) {
-            audioPlayer.stop();
-            destroyAudioPlayer();
+            audioPlayer.setVolume(0,0);
+//            audioPlayer.stop();
+//            destroyAudioPlayer(imageView);
         }
     }
 
@@ -123,15 +126,20 @@ public class AudioServiceBinder extends Binder {
                 audioPlayer = new MediaPlayer();
                 if (!TextUtils.isEmpty(getAudioFileUrl())) {
                     if (isStreamAudio()) {
-                        prg2.setVisibility(View.GONE);
+
                         audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     }
                     audioPlayer.setDataSource(getAudioFileUrl());
                 } else {
                     audioPlayer.setDataSource(getContext(), getAudioFileUri());
-                    prg2.setVisibility(View.GONE);
+
 
                 }
+
+
+
+
+
                 audioPlayer.prepare();
 
                 getviewtest(getContext(), imageView,audioPlayer);
@@ -140,6 +148,10 @@ public class AudioServiceBinder extends Binder {
                     @Override
                     public void run() {
                         while (true) {
+
+
+
+                            Log.d("percentatge", String.valueOf(15));
 
 
                             // Create update audio progress message.
@@ -170,11 +182,17 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Destroy audio player.
-    private void destroyAudioPlayer() {
+    private void destroyAudioPlayer(CircleBarVisualizerSmooth imageView) {
         if (audioPlayer != null) {
+
+
             if (audioPlayer.isPlaying()) {
+
+
                 audioPlayer.stop();
+
             }
+
             audioPlayer.release();
             audioPlayer = null;
         }
@@ -212,7 +230,10 @@ public class AudioServiceBinder extends Binder {
 
 
     public void getviewtest(Context ctx, CircleBarVisualizerSmooth imageView,MediaPlayer ad) {
-        try{imageView.setPlayer(ad.getAudioSessionId());
+        try{
+
+
+            imageView.setPlayer(ad.getAudioSessionId());
 
 
 
