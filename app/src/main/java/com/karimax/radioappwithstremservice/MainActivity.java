@@ -5,6 +5,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.Observer;
 
 import android.Manifest;
 import android.app.Notification;
@@ -33,31 +34,43 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.bumptech.glide.Glide;
 import com.chibde.visualizer.CircleBarVisualizerSmooth;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity implements ConnectionReceiver.ReceiverListener {
+public class MainActivity extends AppCompatActivity {
     public NotificationUtils mNotificationUtils;
     private long pressedTime;
+    public String value;
+    public String hand="nottested";
+    public String restrted="false";
     AlertDialog.Builder builder;
     private AudioServiceBinder audioServiceBinder = null;
     private Handler audioProgressUpdateHandler = null;
-    public String state="start";
+    public String state="start",connected="null";
+     public  Bundle extras;
+    public Handler handler = new Handler();
+    public Runnable runnable;
+    public ImageView showjump;
+
     ImageButton startBackgroundAudio;
-    CircleBarVisualizerSmooth imageView;
+
     private static String TAG = "PermissionDemo";
     private static final int RECORD_REQUEST_CODE = 101;
     final String audioFileUrl = "https://live.ecast.co.il/stream5/8000/azori";
 
     // Show played audio progress.
-    private ProgressBar backgroundAudioProgress;
+
     private TextView audioFileUrlTextView;
     // This service connection object is the bridge between activity and background service.
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -76,7 +89,24 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        showjump=findViewById(R.id.imageView2);
+
+
+
+        showjump.setVisibility(View.GONE);
+
+        Glide.with(getApplicationContext()).load(R.drawable.mypick).into( showjump);
+
+        NetworkStateManager.getInstance().getNetworkConnectivityStatus()
+                .observe(this, activeNetworkStateObserver);
+
+        extras = getIntent().getExtras();
+
+
         mNotificationUtils = new NotificationUtils(this);
+
+
 
 
 
@@ -89,17 +119,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         setTitle("dev2qa.com - Play Audio Use Background Service");
 
 
-        int permission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO);
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission to record denied");
-            setupPermissions();
-        }
-        else{
+
+
             clickplaybtn();
 
-        }
+
+
 
 
 
@@ -109,8 +135,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         // Bind background audio service when activity is created.
 
 
-        backgroundAudioProgress = (ProgressBar)findViewById(R.id.playbtn);
-        backgroundAudioProgress.setVisibility(View.GONE);
+
+
 
 
         // Get audio file url textview.
@@ -128,25 +154,25 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
         // Click this button to pause the audio played in background service.
-        Button pauseBackgroundAudio = (Button)findViewById(R.id.pause_audio_in_background);
-        pauseBackgroundAudio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                audioServiceBinder.pauseAudio();
-                Toast.makeText(getApplicationContext(), "Play web audio file is paused.", Toast.LENGTH_LONG).show();
-            }
-        });
+//        Button pauseBackgroundAudio = (Button)findViewById(R.id.pause_audio_in_background);
+//        pauseBackgroundAudio.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                audioServiceBinder.pauseAudio();
+//                Toast.makeText(getApplicationContext(), "Play web audio file is paused.", Toast.LENGTH_LONG).show();
+//            }
+//        });
         // Click this button to stop the media player in background service.
-        Button stopBackgroundAudio = (Button)findViewById(R.id.stop_audio_in_background);
-        stopBackgroundAudio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                audioServiceBinder.stopAudio(imageView);
-//                backgroundAudioProgress.setVisibility(ProgressBar.INVISIBLE);
-                state="start";
-                Toast.makeText(getApplicationContext(), "Stop play web audio file.", Toast.LENGTH_LONG).show();
-            }
-        });
+//        Button stopBackgroundAudio = (Button)findViewById(R.id.stop_audio_in_background);
+//        stopBackgroundAudio.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                audioServiceBinder.stopAudio(imageView);
+////                backgroundAudioProgress.setVisibility(ProgressBar.INVISIBLE);
+//                state="start";
+//                Toast.makeText(getApplicationContext(), "Stop play web audio file.", Toast.LENGTH_LONG).show();
+//            }
+//        });
 
 
         TelephonyManager telephonyManager =
@@ -171,6 +197,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
         telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
+
+
+
+
+
+
 
 
 
@@ -234,12 +266,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
          MediaPlayer  mediaPlayer= md.retutnmdinstance();
 
 
-        imageView.setColor(ContextCompat.getColor(this, R.color.white));
+
 
 
 
 // Set you media player to the visualizer.
-        try{imageView.setPlayer(mediaPlayer.getAudioSessionId());
+        try{
+
 
 
 
@@ -253,32 +286,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
     }
 
 
-    private void checkConnection() {
 
-        // initialize intent filter
-        IntentFilter intentFilter = new IntentFilter();
-
-        // add action
-        intentFilter.addAction("android.new.conn.CONNECTIVITY_CHANGE");
-
-        // register receiver
-        registerReceiver(new ConnectionReceiver(), intentFilter);
-
-        // Initialize listener
-        ConnectionReceiver.Listener = this;
-
-        // Initialize connectivity manager
-        ConnectivityManager manager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        // Initialize network info
-        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
-
-        // get connection status
-        boolean isConnected = networkInfo != null && networkInfo.isConnectedOrConnecting();
-
-        // display snack bar
-        showSnackBar(isConnected);
-    }
 
     private void showSnackBar(boolean isConnected) {
 
@@ -289,17 +297,16 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         // check condition
         if (isConnected) {
 
+            connected="true";
+
             // when internet is connected
             // set message
 
 
         } else {
 
-            // when internet
-            // is disconnected
-            // set message
 
-
+            Glide.with(getApplicationContext()).load(R.drawable.play_foreground).into(startBackgroundAudio);
 
             message = "Not Connected to Internet";
 
@@ -319,6 +326,32 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
             // show snack bar
             snackbar.show();
+
+            // when internet
+            // is disconnected
+            // set message
+
+            audioServiceBinder.stopAudio2();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            state="stop";
+//                    imageView.setVisibility(View.GONE);
+
+
+
         }
 
 
@@ -326,25 +359,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
     }
 
-    @Override
-    public void onNetworkChange(boolean isConnected) {
-        // display snack bar
-        showSnackBar(isConnected);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // call method
-        checkConnection();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // call method
-        checkConnection();
-    }
 
 
     public void notigications(){
@@ -382,72 +396,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
 
-    private void setupPermissions() {
-
-        int permission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission to record denied");
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.RECORD_AUDIO)) {
-                AlertDialog.Builder builder =
-                        new AlertDialog.Builder(this);
-                builder.setMessage("Permission to access the microphone is required for this app to record audio.")
-                        .setTitle("Permission required");
-
-                builder.setPositiveButton("OK",
-                        new DialogInterface.OnClickListener() {
-
-                            public void onClick(DialogInterface dialog, int id) {
-                                Log.i(TAG, "Clicked");
-                                makeRequest();
-                            }
-                        });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            } else {
-                makeRequest();
-            }
-        }}
-
-
-    protected void makeRequest() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.RECORD_AUDIO},
-                RECORD_REQUEST_CODE);
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case RECORD_REQUEST_CODE: {
-
-                if (grantResults.length == 0
-                        || grantResults[0] !=
-                        PackageManager.PERMISSION_GRANTED) {
-
-                    Log.i(TAG, "Permission has been denied by user");
-                    finish();
-                } else {
-
-
-
-                    clickplaybtn();
 
 
 
 
-                    Log.i(TAG, "Permission has been granted by user");
-                }
-            }
-        }
-    }
 
     public void clickplaybtn(){
 
@@ -462,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
 
-                checkConnection();
+
                 startBackgroundAudio.setClickable(false);
 
 
@@ -474,8 +426,14 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
 
 
-
                 if(state.equalsIgnoreCase("start")||state.equalsIgnoreCase("stop")) {
+
+
+
+
+
+                        //The key argument here must match that used in the other activity
+
 
 
                     // Set web audio file url
@@ -501,16 +459,28 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                     // Initialize audio progress bar updater Handler object.
 
                     createAudioProgressbarUpdater();
+                    audioServiceBinder.setAudioProgressUpdateHandler(audioProgressUpdateHandler);
 
-                    imageView = findViewById(R.id.visualizer);
+                    // Start audio in background service.
+
+
+
+
+
+                    createAudioProgressbarUpdater();
+
+
 
 
                     // Start audio in background service.
-                    audioServiceBinder.startAudio(imageView,backgroundAudioProgress);
+                    audioServiceBinder.startAudio();
 
 
                     state="playing";
-                    gone();
+
+                    showjump.setVisibility(View.VISIBLE);
+
+//                    gone();
                     mutecalls();
                     notigications();
                     animator();
@@ -524,14 +494,22 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
 
                 }
                 else if(state.equalsIgnoreCase("playing")){
+
+
+
                     startBackgroundAudio.setClickable(true);
-                    audioServiceBinder.stopAudio(imageView);
-                    imageView=null;
+                    audioServiceBinder.stopAudio();
+
 
                     Intent stopServiceIntent = new Intent(MainActivity.this, AudioService.class);
                     stopService(stopServiceIntent);
 
                     state="stop";
+                    showjump.setVisibility(View.GONE);
+
+
+
+
 //                    imageView.setVisibility(View.GONE);
 
 
@@ -558,8 +536,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
             stopService(stopServiceIntent);
             finish();
         } else {
+
             Glide.with(getApplicationContext()).load(R.drawable.play_foreground).into(startBackgroundAudio);
-            audioServiceBinder.stopAudio(imageView);
+            audioServiceBinder.stopAudio();
             mNotificationUtils = new NotificationUtils(this);
             mNotificationUtils.cancelNotification();
             state="start";
@@ -583,11 +562,11 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
                 if(state==TelephonyManager.CALL_STATE_RINGING){
 
 
-                    audioServiceBinder.stopAudio(imageView);
+                    audioServiceBinder.stopAudio();
                 }
                 if(state==TelephonyManager.CALL_STATE_OFFHOOK){
 
-                    audioServiceBinder.stopAudio(imageView);
+                    audioServiceBinder.stopAudio();
                 }
 
 
@@ -610,10 +589,18 @@ public class MainActivity extends AppCompatActivity implements ConnectionReceive
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                backgroundAudioProgress.setVisibility(View.GONE);
+//                backgroundAudioProgress.setVisibility(View.GONE);
             }
         });
     }
+
+
+    private final Observer<Boolean> activeNetworkStateObserver = new Observer<Boolean>() {
+        @Override
+        public void onChanged(Boolean isConnected) {
+           showSnackBar(isConnected);
+        }
+    };
 
 
 

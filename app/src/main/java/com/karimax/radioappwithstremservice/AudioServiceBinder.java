@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chibde.visualizer.CircleBarVisualizerSmooth;
@@ -82,10 +83,10 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Start play audio.
-    public void startAudio(CircleBarVisualizerSmooth imageView, ProgressBar prg) {
+    public void startAudio() {
 
 
-        initAudioPlayer(imageView,prg);
+        initAudioPlayer();
         audioPlayer.setVolume(1,1);
         if (audioPlayer != null) {
             audioPlayer.start();
@@ -101,11 +102,19 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Stop play audio.
-    public void stopAudio(CircleBarVisualizerSmooth imageView) {
+    public void stopAudio() {
         if (audioPlayer != null) {
             audioPlayer.setVolume(0,0);
 //            audioPlayer.stop();
 //            destroyAudioPlayer(imageView);
+        }
+    }
+
+    public void stopAudio2() {
+        if (audioPlayer != null) {
+//            audioPlayer.setVolume(0,0);
+            audioPlayer.stop();
+            destroyAudioPlayer();
         }
     }
 
@@ -115,7 +124,7 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Initialise audio player.
-    private void initAudioPlayer(CircleBarVisualizerSmooth imageView,ProgressBar prg2) {
+    private void initAudioPlayer() {
         Class<MainActivity> ctx=MainActivity.class;
         try {
 
@@ -142,7 +151,7 @@ public class AudioServiceBinder extends Binder {
 
                 audioPlayer.prepare();
 
-                getviewtest(getContext(), imageView,audioPlayer);
+                getviewtest(audioPlayer);
                 // This thread object will send update audio progress message to caller activity every 1 second.
                 Thread updateAudioProgressThread = new Thread() {
                     @Override
@@ -182,7 +191,7 @@ public class AudioServiceBinder extends Binder {
     }
 
     // Destroy audio player.
-    private void destroyAudioPlayer(CircleBarVisualizerSmooth imageView) {
+    private void destroyAudioPlayer() {
         if (audioPlayer != null) {
 
 
@@ -229,11 +238,11 @@ public class AudioServiceBinder extends Binder {
     }
 
 
-    public void getviewtest(Context ctx, CircleBarVisualizerSmooth imageView,MediaPlayer ad) {
+    public void getviewtest(MediaPlayer ad) {
         try{
 
 
-            imageView.setPlayer(ad.getAudioSessionId());
+
 
 
 
