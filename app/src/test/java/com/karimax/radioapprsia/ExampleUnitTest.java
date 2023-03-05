@@ -1,4 +1,4 @@
-package com.karimax.radioappwithstremservice;
+package com.karimax.radioapprsia;
 
 import org.junit.Test;
 

@@ -1,26 +1,17 @@
-package com.karimax.radioappwithstremservice;
+package com.karimax.radioapprsia;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
-import android.Manifest;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,22 +22,15 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
-import com.chibde.visualizer.CircleBarVisualizerSmooth;
 import com.google.android.material.snackbar.Snackbar;
-
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import com.karimax.radioapprsia.R;
 
 public class MainActivity extends AppCompatActivity {
     public NotificationUtils mNotificationUtils;
@@ -67,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "PermissionDemo";
     private static final int RECORD_REQUEST_CODE = 101;
-    final String audioFileUrl = "https://live.ecast.co.il/stream5/8000/azori";
+    final String audioFileUrl = "https://live.ecast.co.il/stream/69fm/azori";
 
     // Show played audio progress.
 
