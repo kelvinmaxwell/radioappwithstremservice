@@ -1,4 +1,4 @@
-package com.karimax.radioapprsia;
+package com.karimax.radioappkarimax;
 
 import android.app.Application;
 import android.util.Log;

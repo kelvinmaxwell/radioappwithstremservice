@@ -1,4 +1,4 @@
-package com.karimax.radioapprsia;
+package com.karimax.radioappkarimax;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

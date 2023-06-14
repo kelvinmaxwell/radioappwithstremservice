@@ -1,4 +1,4 @@
-package com.karimax.radioapprsia;
+package com.karimax.radioappkarimax;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
-import com.karimax.radioapprsia.R;
+import com.karimax.radioappkarimax.R;
 
 public class MainActivity extends AppCompatActivity {
     public NotificationUtils mNotificationUtils;

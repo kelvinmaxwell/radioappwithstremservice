@@ -1,4 +1,4 @@
-package com.karimax.radioapprsia;
+package com.karimax.radioappkarimax;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +7,7 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.karimax.radioapprsia.R;
+import com.karimax.radioappkarimax.R;
 
 public class splashactivity extends AppCompatActivity {
     ImageView imageView;

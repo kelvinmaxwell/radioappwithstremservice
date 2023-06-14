@@ -1,11 +1,11 @@
-package com.karimax.radioapprsia;
+package com.karimax.radioappkarimax;
 
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.karimax.radioapprsia.R;
+import com.karimax.radioappkarimax.R;
 
 public class NotificationView extends AppCompatActivity {
 
