@@ -3,13 +3,16 @@ package com.karimax.radioappkarimax;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
+import android.Manifest;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Build;
@@ -179,8 +182,13 @@ public class MainActivity extends AppCompatActivity {
         };
 
 
-
-        telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
+        if (Build.VERSION.SDK_INT >= 31)
+        {
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+                telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
+        else // no permission needed
+              telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
 
 
 
@@ -559,7 +567,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        telephonyManager.listen(callStateListener,PhoneStateListener.LISTEN_CALL_STATE);
+
+        if (Build.VERSION.SDK_INT >= 31)
+        {
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+                telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
+        else // no permission needed
+            telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 
     }
 
